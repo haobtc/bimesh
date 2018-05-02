@@ -1,0 +1,18 @@
+<html>
+  <body>
+    hello
+    <script>
+      var ws = new WebSocket('ws://' + window.location.host + '/ws');
+      ws.onopen = function(evt) {
+        console.log("on open", evt);
+        ws.send(JSON.stringify({data: 1}));
+      }
+      ws.onclose = function(evt) {
+        console.log("on close", evt)
+      }
+      ws.onmessage = function(evt) {
+        console.log("on message", evt);
+      }
+    </script>
+  </body>    
+</html>
