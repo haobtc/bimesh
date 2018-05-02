@@ -31,7 +31,7 @@ func NewRPCMessage(data *simplejson.Json) RPCMessage {
 		}
 	}
 	msg.Params = data.Get("params")
-	msg.Result = data.Get("Result")
+	msg.Result = data.Get("result")
 	msg.Error = data.Get("error")
 	msg.Raw = data
 	return msg

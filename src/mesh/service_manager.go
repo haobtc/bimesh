@@ -63,5 +63,8 @@ func (self *ServiceManager) handleMessage(msg RPCMessage) {
 	} else if msg.Method == "getId" {
 		result := NewResultMessage(msg.Id, msg.FromConnId)
 		context.Router.RouteMessage(result, self.ConnId)
+	} else if msg.Method == "ping" {
+		result := NewResultMessage(msg.Id, "pong")
+		context.Router.RouteMessage(result, self.ConnId)
 	}
 }

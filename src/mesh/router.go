@@ -1,9 +1,9 @@
 package mesh
 
 import (
-	"github.com/gorilla/websocket"
 	"sync"
 	"time"
+	"github.com/gorilla/websocket"
 )
 
 func NewRouter() *Router {
@@ -33,6 +33,7 @@ func (self *Router) Init() *Router {
 	self.ServiceConnMap = make(map[string]([]CID))
 	self.ConnServiceMap = make(map[CID]([]string))
 	self.ConnMap = make(map[CID]ConnT)
+	self.PendingMap = make(map[PendingKey]PendingValue)
 	return self
 }
 
@@ -134,7 +135,7 @@ func (self *Router) ClearTimeoutRequests() {
 func (self *Router) ClearPending(connId CID) {
 	for pKey, pValue := range self.PendingMap {
 		if pKey.ConnId == connId || pValue.ConnId == connId {
-			delete(self.PendingMap, pKey)
+			self.deletePending(pKey)
 		}
 	}
 }
