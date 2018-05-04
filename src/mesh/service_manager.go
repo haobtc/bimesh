@@ -30,41 +30,78 @@ func (self *ServiceManager) Start() {
 	}
 }
 
-func (self *ServiceManager) handleMessage(msg RPCMessage) {
+func (self *ServiceManager) registerServices(msg RPCMessage) {
 	context = Context()
-	if msg.Method == "register" {
-		params, err := msg.Params.Array()
-		if err != nil {
-			errMsg := NewErrorMessage(msg.Id, 400, "params must be array")
+	params, err := msg.Params.Array()
+	if err != nil {
+		errMsg := NewErrorMessage(msg.Id, 400, "params must be array")
+		context.Router.RouteMessage(errMsg, self.ConnId)
+		return
+	}
+	var serviceNames []string
+
+	for _, v := range params {
+		serviceName, ok := v.(string)
+		if !ok {
+			errMsg := NewErrorMessage(msg.Id, 400, "service name must be string")
 			context.Router.RouteMessage(errMsg, self.ConnId)
 			return
 		}
-		var serviceNames []string
+		serviceNames = append(serviceNames, serviceName)
+	}
 
-		for _, v := range params {
-			serviceName, ok := v.(string)
-			if !ok {
-				errMsg := NewErrorMessage(msg.Id, 400, "service name must be string")
-				context.Router.RouteMessage(errMsg, self.ConnId)
-				return
-			}
-			serviceNames = append(serviceNames, serviceName)
-		}
+	for _, serviceName := range serviceNames {
+		context.Router.RegisterService(msg.FromConnId, serviceName)
+	}
+	result := NewResultMessage(msg.Id, "ok")
+	context.Router.RouteMessage(result, self.ConnId)
+}
 
-		for _, serviceName := range serviceNames {
-			context.Router.RegisterService(msg.FromConnId, serviceName)
+func (self *ServiceManager) unregisterServices(msg RPCMessage) {
+	context = Context()
+	params, err := msg.Params.Array()
+	if err != nil {
+		errMsg := NewErrorMessage(msg.Id, 400, "params must be array")
+		context.Router.RouteMessage(errMsg, self.ConnId)
+		return
+	}
+	var serviceNames []string
+
+	for _, v := range params {
+		serviceName, ok := v.(string)
+		if !ok {
+			errMsg := NewErrorMessage(msg.Id, 400, "service name must be string")
+			context.Router.RouteMessage(errMsg, self.ConnId)
+			return
 		}
-		result := NewResultMessage(msg.Id, "ok")
-		context.Router.RouteMessage(result, self.ConnId)
-	} else if msg.Method == "getServices" {
-		serviceNames := context.Router.GetServices(self.ConnId)
+		serviceNames = append(serviceNames, serviceName)
+	}
+
+	for _, serviceName := range serviceNames {
+		context.Router.UnRegisterService(msg.FromConnId, serviceName)
+	}
+	result := NewResultMessage(msg.Id, "ok")
+	context.Router.RouteMessage(result, self.ConnId)
+}
+
+func (self *ServiceManager) handleMessage(msg RPCMessage) {
+	switch msg.Method {
+	case "register":
+		self.registerServices(msg)
+	case "unregister":
+		self.unregisterServices(msg)
+	case "getServices":
+		serviceNames := Context().Router.GetServices(self.ConnId)
 		result := NewResultMessage(msg.Id, serviceNames)
-		context.Router.RouteMessage(result, self.ConnId)
-	} else if msg.Method == "getId" {
+		Context().Router.RouteMessage(result, self.ConnId)
+	case "getId":
 		result := NewResultMessage(msg.Id, msg.FromConnId)
-		context.Router.RouteMessage(result, self.ConnId)
-	} else if msg.Method == "ping" {
+		Context().Router.RouteMessage(result, self.ConnId)
+	case "ping":
 		result := NewResultMessage(msg.Id, "pong")
-		context.Router.RouteMessage(result, self.ConnId)
+		Context().Router.RouteMessage(result, self.ConnId)
+	default:
+		errorMsg := NewErrorMessage(msg.Id, 404, "method not found")
+		Context().Router.RouteMessage(errorMsg, self.ConnId)
 	}
 }

@@ -7,7 +7,6 @@ class MeshContext extends EventEmitter
 {
   constructor() {
     super()
-
     this.counter = 1;
     this.rpcCallbacks = {}
     this.ws = null
@@ -23,7 +22,6 @@ class MeshContext extends EventEmitter
     this.ws = new WebSocket(meshServer)
     this.ws.on('open', () => {
       self.call('builtin-services::getId', [], (err, ret) => {
-        console.info('call', err, ret, this.pendingServiceNames)
         if(err) {
           throw err
         } else {
@@ -76,7 +74,6 @@ class MeshContext extends EventEmitter
       method: serviceMethod,
       params: params
     })
-    console.info('callId', callId)
     return callId
   }
 

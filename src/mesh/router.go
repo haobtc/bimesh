@@ -69,9 +69,53 @@ func (self *Router) RegisterService(connId CID, serviceName string) error {
 	return nil
 }
 
+func (self *Router) UnRegisterService(connId CID, serviceName string) error {
+	self.serviceLock.Lock()
+	defer self.serviceLock.Unlock()
+
+	serviceNames, ok := self.ConnServiceMap[connId]
+	if ok {
+		var tmpServiceNames []string
+
+		for _, sname := range serviceNames {
+			if sname != serviceName {
+				tmpServiceNames = append(tmpServiceNames, sname)
+			}
+		}
+		if len(tmpServiceNames) > 0 {
+			self.ConnServiceMap[connId] = tmpServiceNames
+		} else {
+			delete(self.ConnServiceMap, connId)
+		}
+	}
+
+	connIds, ok := self.ServiceConnMap[serviceName]
+	if ok {
+		var tmpConnIds []CID
+		for _, cid := range connIds {
+			if cid != connId {
+				tmpConnIds = append(tmpConnIds, cid)
+			}
+
+			if len(tmpConnIds) > 0 {
+				self.ServiceConnMap[serviceName] = tmpConnIds
+			} else {
+				delete(self.ServiceConnMap, serviceName)
+			}
+		}
+	}
+
+
+	ct, ok := self.ConnMap[connId]
+	if ok {
+		delete(self.ConnMap, connId)
+		close(ct.RecvChannel)
+	}
+	return nil
+}
+
 func (self *Router) unregisterConn(connId CID) {
 	self.ClearPending(connId)
-
 	self.serviceLock.Lock()
 	defer self.serviceLock.Unlock()
 

@@ -51,7 +51,7 @@ func handleHttp(w http.ResponseWriter, r *http.Request) {
 		errorResponse(w, r, err, 400, "Bad request")
 		return
 	}
-	
+
 	msg.FromConnId = req.ConnId
 	result, err := req.RequestAndWait(msg)
 	if err != nil {
