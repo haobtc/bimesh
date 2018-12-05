@@ -6,6 +6,7 @@ import (
 	"bytes"
 	"github.com/gorilla/websocket"
 	"mesh"
+	"datadir"
 )
 
 var upgrader = websocket.Upgrader{}
@@ -16,6 +17,8 @@ var upgrader = websocket.Upgrader{}
 //var serviceManager = new(mesh.ServiceManager)
 
 func main() {
+	datadir.SetDataDir("hello")
+	datadir.EnsureDataDir("")
 	mesh.Context().Start()
 
 	http.HandleFunc("/jsonrpc/ws", handleWebsocket)
