@@ -21,6 +21,6 @@ type Endpoint interface {
 
 type Mesh struct {
 	serviceLock *sync.RWMutex
-	idEndpointMap map[string](*Endpoint)
-	serviceEndpointsMap map[string]([]*Endpoint)
+	idEndpointMap map[string](Endpoint)
+	serviceEndpointsMap map[string]([]Endpoint)
 }
