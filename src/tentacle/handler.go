@@ -1,20 +1,12 @@
 package tentacle
 
 import (
-	"log"
-	"bytes"
 	"net/http"
 	"github.com/gorilla/websocket"
 	"jsonrpc"
 )
 
 var upgrader = websocket.Upgrader{}
-
-func errorResponse(w http.ResponseWriter, r *http.Request, err error, status int, message string) {
-	log.Printf("websocket error: %s %d", err.Error(), status)
-	w.WriteHeader(status)
-	w.Write([]byte(message))
-}
 
 func HandleWebsocket(w http.ResponseWriter, r *http.Request) {
 	context := Context()
@@ -37,7 +29,7 @@ func HandleWebsocket(w http.ResponseWriter, r *http.Request) {
 
 		msg, err := jsonrpc.ParseMessage(data)
 		if err != nil {
-			errorResponse(w, r, err, 400, "Bad request")
+			jsonrpc.ErrorResponse(w, r, err, 400, "Bad request")
 			return
 		}
 		msg.FromConnId = actor.ConnId
@@ -45,36 +37,12 @@ func HandleWebsocket(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-
-func HandleHttp(w http.ResponseWriter, r *http.Request) {
+func HandleHttp(w http.ResponseWriter, r *http.Request, msg jsonrpc.RPCMessage) (jsonrpc.RPCMessage, error){
 	req := new(Requester).Init()
 	defer req.Close()
 
-	var buffer bytes.Buffer
-	_, err := buffer.ReadFrom(r.Body)
-	if err != nil {
-		errorResponse(w, r, err, 400, "Bad request")
-		return
-	}
-
-	msg, err := jsonrpc.ParseMessage(buffer.Bytes())
-	if err != nil {
-		errorResponse(w, r, err, 400, "Bad request")
-		return
-	}
-
 	msg.FromConnId = req.ConnId
 	result, err := req.RequestAndWait(msg)
-	if err != nil {
-		errorResponse(w, r, err, 500, "server error")
-		return
-	}
-
-	bytes, err := result.Raw.MarshalJSON()
-	if err != nil {
-		errorResponse(w, r, err, 500, "server error")
-		return
-	}
-	w.Write(bytes)
+	return result, err
 }
 

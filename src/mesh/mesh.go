@@ -16,7 +16,7 @@ func GetMesh() *Mesh {
 
 func (self *Mesh) Init() *Mesh {
 	self.serviceLock = new(sync.RWMutex)
-	self.urlEndpointMap = make(map[string](*Endpoint))
+	self.idEndpointMap = make(map[string](*Endpoint))
 	self.serviceEndpointsMap = make(map[string]([]*Endpoint))
 	return self
 }
@@ -26,14 +26,15 @@ func (self * Mesh) Join(endpoint *Endpoint) error {
 	self.serviceLock.Lock()
 	defer self.serviceLock.Unlock()
 
-	_, ok := self.urlEndpointMap[endpoint.Url]
+	epId := (*endpoint).GetId()
+	_, ok := self.idEndpointMap[epId]
 	if ok {
 		return errors.New("endpoint already exist")
 	}
 
-	self.urlEndpointMap[endpoint.Url] = endpoint
+	self.idEndpointMap[epId] = endpoint
 
-	for _, serviceName := range endpoint.ServiceNames {
+	for _, serviceName := range (*endpoint).GetServiceNames() {
 		arr, ok := self.serviceEndpointsMap[serviceName]
 		if ok {
 			arr = append(arr, endpoint)
@@ -46,16 +47,16 @@ func (self * Mesh) Join(endpoint *Endpoint) error {
 	return nil
 }
 
-func (self *Mesh) Leave(endpointUrl string) (*Endpoint) {
+func (self *Mesh) Leave(endpointId string) (*Endpoint) {
 	self.serviceLock.Lock()
 	defer self.serviceLock.Unlock()
 
-	endpoint, ok := self.urlEndpointMap[endpointUrl]
+	endpoint, ok := self.idEndpointMap[endpointId]
 	if !ok {
 		return nil
 	}
 
-	for _, serviceName := range endpoint.ServiceNames {
+	for _, serviceName := range (*endpoint).GetServiceNames() {
 		arr, ok := self.serviceEndpointsMap[serviceName]
 		if !ok {
 			// FIXME: it almost not happend
@@ -63,7 +64,8 @@ func (self *Mesh) Leave(endpointUrl string) (*Endpoint) {
 		}
 		var newArr [](*Endpoint)
 		for _, ep := range arr {
-			if ep.Url != endpointUrl {
+			epId := (*ep).GetId()
+			if epId != endpointId {
 				newArr = append(newArr, ep)
 			}
 		}
@@ -73,7 +75,7 @@ func (self *Mesh) Leave(endpointUrl string) (*Endpoint) {
 			delete(self.serviceEndpointsMap, serviceName)
 		}
 	}
-	delete(self.urlEndpointMap, endpointUrl)
+	delete(self.idEndpointMap, endpointId)
 	return endpoint
 }
 

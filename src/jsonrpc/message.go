@@ -115,3 +115,5 @@ func (self RPCMessage) IsValid() bool {
 func (self RPCMessage) GetParams() []interface{} {
 	return self.Params.MustArray()
 }
+
+

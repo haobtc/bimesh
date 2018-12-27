@@ -5,7 +5,7 @@ type Bind struct {
 	Port int `yaml:"port,omitempty"`
 }
 
-type EndpointConfig struct {
+type StaticEndpointConfig struct {
 	Url string `yaml:"url"`
 	Cert string `yaml:"cert,omitempty"`
 
@@ -23,5 +23,5 @@ type EndpointConfig struct {
 type Config struct {
 	Version string `yaml:"version,omitempty"`
 	Bind Bind `yaml:"bind,omitempty"`
-	StaticEndpoints []EndpointConfig `yaml:"static_endpoints,flow"`
+	StaticEndpoints []StaticEndpointConfig `yaml:"static_endpoints,flow"`
 }
