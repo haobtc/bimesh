@@ -6,18 +6,20 @@ import (
 	"net/http"
 	"tentacle"
 	"datadir"
+	"mesh"
 )
 
 func main() {
 	//datadir.SetDataDir("hello")
 	datadir.EnsureDataDir("")
 
+	_ = mesh.GetMesh()
 	cfg := datadir.GetConfig()
 	fmt.Printf("version %s %s %d\n", cfg.Version, cfg.Bind.Host, cfg.Bind.Port)
 
-	for _, box := range cfg.StaticBoxes {
-		fmt.Printf("box %s %s %s \n", box.Boxid, box.Endpoint, box.Cert)
-		for _, name := range box.ServiceNames {
+	for _, endp := range cfg.StaticEndpoints {
+		fmt.Printf("endpoint %s %s %s %s\n", endp.Url, endp.ServiceType, endp.Cert)
+		for _, name := range endp.ServiceNames {
 			fmt.Printf(" - service %s\n", name)
 		}
 	}

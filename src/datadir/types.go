@@ -5,16 +5,23 @@ type Bind struct {
 	Port int `yaml:"port,omitempty"`
 }
 
-
-type BoxRef struct {
-	Boxid string `yaml:"boxid"`
-	Endpoint string `yaml:"endpoint"`
+type EndpointConfig struct {
+	Url string `yaml:"url"`
 	Cert string `yaml:"cert,omitempty"`
+
+	// enum{jsonrpc}, currently only jsonrpc is allowd, reserved
+	// for future usages
+	ServiceType string `yaml:"service_type,omitempty"`
+
+	// infix between service name and service method, default is '::'
+	ServiceInfix string `yaml:"service_infix,omitempty"`
+
+	// list serice names
 	ServiceNames []string `yaml:"service_names"`
 }
 
 type Config struct {
 	Version string `yaml:"version,omitempty"`
 	Bind Bind `yaml:"bind,omitempty"`
-	StaticBoxes []BoxRef `yaml:"static_boxes,omitempty"`
+	StaticEndpoints []EndpointConfig `yaml:"static_endpoints,flow"`
 }

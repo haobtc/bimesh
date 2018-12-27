@@ -1,6 +1,8 @@
 package tentacle
 
-import "jsonrpc"
+import (
+	"jsonrpc"
+)
 
 // builtin services manager
 

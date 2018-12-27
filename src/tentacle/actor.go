@@ -3,7 +3,6 @@ package tentacle
 import (
 	"github.com/bitly/go-simplejson"
 	"github.com/gorilla/websocket"
-	//"github.com/satori/go.uuid"
 )
 
 func (self *Actor) Init(conn *websocket.Conn) *Actor {

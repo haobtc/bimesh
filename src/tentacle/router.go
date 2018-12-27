@@ -41,7 +41,6 @@ func (self *Router) Init() *Router {
 func (self *Router) registerConn(connId jsonrpc.CID, ch MsgChannel, intent string) {
 	self.ConnMap[connId] = ConnT{RecvChannel: ch, Intent: intent}
 	// register connId as a service name
-	//self.RegisterService(connId, connId)
 }
 
 func (self *Router) RegisterService(connId jsonrpc.CID, serviceName string) error {
