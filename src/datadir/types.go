@@ -17,7 +17,7 @@ type BoxRef struct {
 	ServiceNames []string `json:"service_names"`
 }
 
-type Router struct {
+type StaticRouter struct {
 	Version string `json:"version,omniempty"`
 	Boxes []BoxRef `json:"boxes"`
 }

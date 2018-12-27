@@ -6,6 +6,7 @@ import (
 	"net/http"
 	"bytes"
 	"github.com/gorilla/websocket"
+	"jsonrpc"
 	"mesh"
 	"datadir"
 )
@@ -61,7 +62,7 @@ func handleHttp(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	msg, err := mesh.ParseMessage(buffer.Bytes())
+	msg, err := jsonrpc.ParseMessage(buffer.Bytes())
 	if err != nil {
 		errorResponse(w, r, err, 400, "Bad request")
 		return
@@ -101,7 +102,7 @@ func handleWebsocket(w http.ResponseWriter, r *http.Request) {
 			//panic("close" + err.Error())
 		}
 
-		msg, err := mesh.ParseMessage(data)
+		msg, err := jsonrpc.ParseMessage(data)
 		if err != nil {
 			errorResponse(w, r, err, 400, "Bad request")
 			return

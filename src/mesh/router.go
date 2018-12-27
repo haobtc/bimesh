@@ -4,6 +4,7 @@ import (
 	"sync"
 	"time"
 	"github.com/gorilla/websocket"
+	"jsonrpc"
 )
 
 func NewRouter() *Router {
@@ -14,7 +15,7 @@ func GetConnId(c *websocket.Conn) string {
 	return c.UnderlyingConn().RemoteAddr().String()
 }
 
-func RemoveElement(slice []CID, elems CID) []CID {
+func RemoveElement(slice []jsonrpc.CID, elems jsonrpc.CID) []jsonrpc.CID {
 	for i := range slice {
 		if slice[i] == elems {
 			slice = append(slice[:i], slice[i+1:]...)
@@ -30,20 +31,20 @@ func (self *Router) Init() *Router {
 	self.ChBroadcast = make(MsgChannel, 10000)
 
 	self.serviceLock = new(sync.RWMutex)
-	self.ServiceConnMap = make(map[string]([]CID))
-	self.ConnServiceMap = make(map[CID]([]string))
-	self.ConnMap = make(map[CID]ConnT)
+	self.ServiceConnMap = make(map[string]([]jsonrpc.CID))
+	self.ConnServiceMap = make(map[jsonrpc.CID]([]string))
+	self.ConnMap = make(map[jsonrpc.CID]ConnT)
 	self.PendingMap = make(map[PendingKey]PendingValue)
 	return self
 }
 
-func (self *Router) registerConn(connId CID, ch MsgChannel, intent string) {
+func (self *Router) registerConn(connId jsonrpc.CID, ch MsgChannel, intent string) {
 	self.ConnMap[connId] = ConnT{RecvChannel: ch, Intent: intent}
 	// register connId as a service name
 	//self.RegisterService(connId, connId)
 }
 
-func (self *Router) RegisterService(connId CID, serviceName string) error {
+func (self *Router) RegisterService(connId jsonrpc.CID, serviceName string) error {
 	self.serviceLock.Lock()
 	defer self.serviceLock.Unlock()
 
@@ -52,7 +53,7 @@ func (self *Router) RegisterService(connId CID, serviceName string) error {
 	if ok {
 		cidArr = append(cidArr, connId)
 	} else {
-		var a []CID
+		var a []jsonrpc.CID
 		cidArr = append(a, connId)
 	}
 	self.ServiceConnMap[serviceName] = cidArr
@@ -69,7 +70,7 @@ func (self *Router) RegisterService(connId CID, serviceName string) error {
 	return nil
 }
 
-func (self *Router) UnRegisterService(connId CID, serviceName string) error {
+func (self *Router) UnRegisterService(connId jsonrpc.CID, serviceName string) error {
 	self.serviceLock.Lock()
 	defer self.serviceLock.Unlock()
 
@@ -91,7 +92,7 @@ func (self *Router) UnRegisterService(connId CID, serviceName string) error {
 
 	connIds, ok := self.ServiceConnMap[serviceName]
 	if ok {
-		var tmpConnIds []CID
+		var tmpConnIds []jsonrpc.CID
 		for _, cid := range connIds {
 			if cid != connId {
 				tmpConnIds = append(tmpConnIds, cid)
@@ -114,7 +115,7 @@ func (self *Router) UnRegisterService(connId CID, serviceName string) error {
 	return nil
 }
 
-func (self *Router) unregisterConn(connId CID) {
+func (self *Router) unregisterConn(connId jsonrpc.CID) {
 	self.ClearPending(connId)
 	self.serviceLock.Lock()
 	defer self.serviceLock.Unlock()
@@ -143,7 +144,7 @@ func (self *Router) unregisterConn(connId CID) {
 	}
 }
 
-func (self *Router) SelectConn(serviceName string) (CID, bool) {
+func (self *Router) SelectConn(serviceName string) (jsonrpc.CID, bool) {
 	self.serviceLock.RLock()
 	defer self.serviceLock.RUnlock()
 
@@ -155,7 +156,7 @@ func (self *Router) SelectConn(serviceName string) (CID, bool) {
 	return 0, false
 }
 
-func (self *Router) GetServices(connId CID) []string {
+func (self *Router) GetServices(connId jsonrpc.CID) []string {
 	self.serviceLock.RLock()
 	defer self.serviceLock.RUnlock()
 	return self.ConnServiceMap[connId]
@@ -167,7 +168,7 @@ func (self *Router) ClearTimeoutRequests() {
 
 	for pKey, pValue := range self.PendingMap {
 		if now.After(pValue.Expire) {
-			errMsg := NewErrorMessage(pKey.MsgId, 408, "request timeout")
+			errMsg := jsonrpc.NewErrorMessage(pKey.MsgId, 408, "request timeout")
 			_ = self.deliverMessage(pKey.ConnId, errMsg)
 		} else {
 			tmpMap[pKey] = pValue
@@ -176,7 +177,7 @@ func (self *Router) ClearTimeoutRequests() {
 	self.PendingMap = tmpMap
 }
 
-func (self *Router) ClearPending(connId CID) {
+func (self *Router) ClearPending(connId jsonrpc.CID) {
 	for pKey, pValue := range self.PendingMap {
 		if pKey.ConnId == connId || pValue.ConnId == connId {
 			self.deletePending(pKey)
@@ -192,7 +193,7 @@ func (self *Router) setPending(pKey PendingKey, pValue PendingValue) {
 	self.PendingMap[pKey] = pValue
 }
 
-func (self *Router) routeMessage(msg RPCMessage) error {
+func (self *Router) routeMessage(msg jsonrpc.RPCMessage) error {
 	fromConnId := msg.FromConnId
 	if msg.IsRequest() {
 		toConnId, found := self.SelectConn(msg.ServiceName)
@@ -204,7 +205,7 @@ func (self *Router) routeMessage(msg RPCMessage) error {
 			self.setPending(pKey, pValue)
 			return self.deliverMessage(toConnId, msg)
 		} else {
-			errMsg := NewErrorMessage(msg.Id, 404, "service not found")
+			errMsg := jsonrpc.NewErrorMessage(msg.Id, 404, "service not found")
 			return self.deliverMessage(fromConnId, errMsg)
 		}
 	} else if msg.IsNotify() {
@@ -212,7 +213,7 @@ func (self *Router) routeMessage(msg RPCMessage) error {
 		if found {
 			return self.deliverMessage(toConnId, msg)
 		} else {
-			errMsg := NewErrorMessage(msg.Id, 404, "service not found")
+			errMsg := jsonrpc.NewErrorMessage(msg.Id, 404, "service not found")
 			return self.deliverMessage(fromConnId, errMsg)
 		}
 	} else if msg.IsResultOrError() {
@@ -228,9 +229,9 @@ func (self *Router) routeMessage(msg RPCMessage) error {
 	return nil
 }
 
-func (self *Router) broadcastNotify(notify RPCMessage) error {
+func (self *Router) broadcastNotify(notify jsonrpc.RPCMessage) error {
 	if !notify.IsNotify() {
-		errMsg := NewErrorMessage(notify.Id, 400, "only notify can be broadcasted")
+		errMsg := jsonrpc.NewErrorMessage(notify.Id, 400, "only notify can be broadcasted")
 		self.deliverMessage(notify.FromConnId, errMsg)
 		return nil
 	}
@@ -245,7 +246,7 @@ func (self *Router) broadcastNotify(notify RPCMessage) error {
 	return nil
 }
 
-func (self *Router) deliverMessage(connId CID, msg RPCMessage) error {
+func (self *Router) deliverMessage(connId jsonrpc.CID, msg jsonrpc.RPCMessage) error {
 	ct, ok := self.ConnMap[connId]
 	if ok {
 		ct.RecvChannel <- msg
@@ -263,26 +264,26 @@ func (self *Router) Start() {
 		case notify := <-self.ChBroadcast:
 			self.broadcastNotify(notify)
 		case closeCmd := <-self.ChLeave:
-			self.unregisterConn(CID(closeCmd))
+			self.unregisterConn(jsonrpc.CID(closeCmd))
 		}
 	}
 }
 
 // commands
-func (self *Router) RouteMessage(msg RPCMessage, fromConnId CID) {
+func (self *Router) RouteMessage(msg jsonrpc.RPCMessage, fromConnId jsonrpc.CID) {
 	msg.FromConnId = fromConnId
 	self.ChMsg <- msg
 }
 
-func (self *Router) BroadcastNotify(notify RPCMessage, fromConnId CID) {
+func (self *Router) BroadcastNotify(notify jsonrpc.RPCMessage, fromConnId jsonrpc.CID) {
 	notify.FromConnId = fromConnId
 	self.ChBroadcast <- notify
 }
 
-func (self *Router) Join(connId CID, ch MsgChannel, intent string) {
+func (self *Router) Join(connId jsonrpc.CID, ch MsgChannel, intent string) {
 	self.ChJoin <- JoinCommand{ConnId: connId, Channel: ch, Intent: intent}
 }
 
-func (self *Router) Leave(connId CID) {
+func (self *Router) Leave(connId jsonrpc.CID) {
 	self.ChLeave <- LeaveCommand(connId)
 }

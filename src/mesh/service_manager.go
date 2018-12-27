@@ -1,5 +1,7 @@
 package mesh
 
+import "jsonrpc"
+
 // builtin services manager
 
 func (self *ServiceManager) Init() *ServiceManager {
@@ -30,11 +32,11 @@ func (self *ServiceManager) Start() {
 	}
 }
 
-func (self *ServiceManager) registerServices(msg RPCMessage) {
+func (self *ServiceManager) registerServices(msg jsonrpc.RPCMessage) {
 	context = Context()
 	params, err := msg.Params.Array()
 	if err != nil {
-		errMsg := NewErrorMessage(msg.Id, 400, "params must be array")
+		errMsg := jsonrpc.NewErrorMessage(msg.Id, 400, "params must be array")
 		context.Router.RouteMessage(errMsg, self.ConnId)
 		return
 	}
@@ -43,7 +45,7 @@ func (self *ServiceManager) registerServices(msg RPCMessage) {
 	for _, v := range params {
 		serviceName, ok := v.(string)
 		if !ok {
-			errMsg := NewErrorMessage(msg.Id, 400, "service name must be string")
+			errMsg := jsonrpc.NewErrorMessage(msg.Id, 400, "service name must be string")
 			context.Router.RouteMessage(errMsg, self.ConnId)
 			return
 		}
@@ -53,15 +55,15 @@ func (self *ServiceManager) registerServices(msg RPCMessage) {
 	for _, serviceName := range serviceNames {
 		context.Router.RegisterService(msg.FromConnId, serviceName)
 	}
-	result := NewResultMessage(msg.Id, "ok")
+	result := jsonrpc.NewResultMessage(msg.Id, "ok")
 	context.Router.RouteMessage(result, self.ConnId)
 }
 
-func (self *ServiceManager) unregisterServices(msg RPCMessage) {
+func (self *ServiceManager) unregisterServices(msg jsonrpc.RPCMessage) {
 	context = Context()
 	params, err := msg.Params.Array()
 	if err != nil {
-		errMsg := NewErrorMessage(msg.Id, 400, "params must be array")
+		errMsg := jsonrpc.NewErrorMessage(msg.Id, 400, "params must be array")
 		context.Router.RouteMessage(errMsg, self.ConnId)
 		return
 	}
@@ -70,7 +72,7 @@ func (self *ServiceManager) unregisterServices(msg RPCMessage) {
 	for _, v := range params {
 		serviceName, ok := v.(string)
 		if !ok {
-			errMsg := NewErrorMessage(msg.Id, 400, "service name must be string")
+			errMsg := jsonrpc.NewErrorMessage(msg.Id, 400, "service name must be string")
 			context.Router.RouteMessage(errMsg, self.ConnId)
 			return
 		}
@@ -80,11 +82,11 @@ func (self *ServiceManager) unregisterServices(msg RPCMessage) {
 	for _, serviceName := range serviceNames {
 		context.Router.UnRegisterService(msg.FromConnId, serviceName)
 	}
-	result := NewResultMessage(msg.Id, "ok")
+	result := jsonrpc.NewResultMessage(msg.Id, "ok")
 	context.Router.RouteMessage(result, self.ConnId)
 }
 
-func (self *ServiceManager) handleMessage(msg RPCMessage) {
+func (self *ServiceManager) handleMessage(msg jsonrpc.RPCMessage) {
 	switch msg.Method {
 	case "register":
 		self.registerServices(msg)
@@ -92,16 +94,16 @@ func (self *ServiceManager) handleMessage(msg RPCMessage) {
 		self.unregisterServices(msg)
 	case "getServices":
 		serviceNames := Context().Router.GetServices(self.ConnId)
-		result := NewResultMessage(msg.Id, serviceNames)
+		result := jsonrpc.NewResultMessage(msg.Id, serviceNames)
 		Context().Router.RouteMessage(result, self.ConnId)
 	case "getId":
-		result := NewResultMessage(msg.Id, msg.FromConnId)
+		result := jsonrpc.NewResultMessage(msg.Id, msg.FromConnId)
 		Context().Router.RouteMessage(result, self.ConnId)
 	case "ping":
-		result := NewResultMessage(msg.Id, "pong")
+		result := jsonrpc.NewResultMessage(msg.Id, "pong")
 		Context().Router.RouteMessage(result, self.ConnId)
 	default:
-		errorMsg := NewErrorMessage(msg.Id, 404, "method not found")
+		errorMsg := jsonrpc.NewErrorMessage(msg.Id, 404, "method not found")
 		Context().Router.RouteMessage(errorMsg, self.ConnId)
 	}
 }

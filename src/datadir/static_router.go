@@ -6,10 +6,10 @@ import (
 	"encoding/json"
 )
 
-var router Router
+var router StaticRouter
 var routerParsed bool = false
 
-func GetRouter() Router {
+func GetRouter() StaticRouter {
 	if !routerParsed {
 		err := router.Parse()
 		if err != nil {
@@ -20,7 +20,7 @@ func GetRouter() Router {
 	return router
 }
 
-func (self *Router) Parse() (err error) {
+func (self *StaticRouter) Parse() (err error) {
 	routerPath := DataPath("router.json")
 	if _, err := os.Stat(routerPath); os.IsNotExist(err) {
 		self.FillDefaultValues()
@@ -38,7 +38,7 @@ func (self *Router) Parse() (err error) {
 	return nil
 }
 
-func (self *Router) FillDefaultValues() {
+func (self *StaticRouter) FillDefaultValues() {
 	if self.Version == "" {
 		self.Version = "1.0"
 	}

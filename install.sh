@@ -14,8 +14,8 @@ go get github.com/satori/go.uuid
 echo go get github.com/stretchr/testify/assert
 go get github.com/stretchr/testify/assert
 
-echo testing mesh
-go test mesh
+echo testing jsonrpc
+go test jsonrpc
 
 go install bimeshd
 

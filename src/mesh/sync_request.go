@@ -2,6 +2,7 @@ package mesh
 
 import (
 	"errors"
+	"jsonrpc"
 )
 
 func (self *Requester) Init() *Requester {
@@ -14,7 +15,7 @@ func (self *Requester) Close() {
 	Context().Router.Leave(self.ConnId)
 }
 
-func (self *Requester) RequestAndWait(msg RPCMessage) (RPCMessage, error) {
+func (self *Requester) RequestAndWait(msg jsonrpc.RPCMessage) (jsonrpc.RPCMessage, error) {
 	// register connection
 	Context().Router.Join(self.ConnId, self.ChMsg, "requester")
 	Context().Router.RouteMessage(msg, self.ConnId)
@@ -28,9 +29,9 @@ func (self *Requester) RequestAndWait(msg RPCMessage) (RPCMessage, error) {
 				}
 			} else {
 				// log.
-				return RPCMessage{}, errors.New("connection closed")
+				return jsonrpc.RPCMessage{}, errors.New("connection closed")
 			}
 		}
 	}
-	return RPCMessage{}, nil
+	return jsonrpc.RPCMessage{}, nil
 }

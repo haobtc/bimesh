@@ -2,6 +2,7 @@ package mesh
 
 import (
 	"sync/atomic"
+	"jsonrpc"
 )
 
 var counter uint64 = 10000
@@ -10,6 +11,6 @@ func GetUID() uint64 {
 	return atomic.AddUint64(&counter, 1)
 }
 
-func GetCID() CID {
-	return CID(GetUID())
+func GetCID() jsonrpc.CID {
+	return jsonrpc.CID(GetUID())
 }

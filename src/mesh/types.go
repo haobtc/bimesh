@@ -1,48 +1,35 @@
 package mesh
 
 import (
-	"github.com/bitly/go-simplejson"
 	"github.com/gorilla/websocket"
 	"sync"
 	"time"
+	"jsonrpc"
 )
 
-type CID uint64
-
-type RPCMessage struct {
-	Initialized bool
-	FromConnId  CID
-	Id          interface{}
-	ServiceName string
-	Method      string
-	Params      *simplejson.Json
-	Result      *simplejson.Json
-	Error       *simplejson.Json
-	Raw         *simplejson.Json
-}
 
 // 5 seconds
 const DefaultRequestTimeout time.Duration = 1000000 * 5
 
 // Commands
-type MsgChannel chan RPCMessage
+type MsgChannel chan jsonrpc.RPCMessage
 
 type JoinCommand struct {
-	ConnId  CID
+	ConnId  jsonrpc.CID
 	Channel MsgChannel
 	Intent  string
 }
 
-type LeaveCommand CID
+type LeaveCommand jsonrpc.CID
 
 // Pending Struct
 type PendingKey struct {
-	ConnId CID
+	ConnId jsonrpc.CID
 	MsgId  interface{}
 }
 
 type PendingValue struct {
-	ConnId CID
+	ConnId jsonrpc.CID
 	Expire time.Time
 }
 
@@ -60,29 +47,29 @@ type Router struct {
 	ChBroadcast MsgChannel
 
 	serviceLock    *sync.RWMutex
-	ServiceConnMap map[string]([]CID)
-	ConnServiceMap map[CID]([]string)
+	ServiceConnMap map[string]([]jsonrpc.CID)
+	ConnServiceMap map[jsonrpc.CID]([]string)
 
-	ConnMap    map[CID](ConnT)
+	ConnMap    map[jsonrpc.CID](ConnT)
 	PendingMap map[PendingKey]PendingValue
 }
 
 // An ConnActor manage a websocket connection and handles incoming messages
 type Actor struct {
 	ChMsg  MsgChannel
-	ConnId CID
+	ConnId jsonrpc.CID
 	Conn   *websocket.Conn
 }
 
 type Requester struct {
 	ChMsg  MsgChannel
-	ConnId CID
+	ConnId jsonrpc.CID
 }
 
 // builtin services
 type ServiceManager struct {
 	ChMsg  MsgChannel
-	ConnId CID
+	ConnId jsonrpc.CID
 }
 
 type ContextT struct {

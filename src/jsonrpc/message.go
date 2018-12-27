@@ -1,4 +1,4 @@
-package mesh
+package jsonrpc
 
 import (
 	"encoding/json"
