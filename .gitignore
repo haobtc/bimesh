@@ -13,6 +13,7 @@
 # Project-local glide cache, RE: https://github.com/Masterminds/glide/issues/736
 .glide/
 github.com/
+gopkg.in/
 bin
 pkg
 node_modules/

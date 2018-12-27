@@ -11,6 +11,9 @@ go get github.com/bitly/go-simplejson
 echo go get github.com/satori/go.uuid
 go get github.com/satori/go.uuid
 
+echo go get gopkg.in/yaml.v2
+go get gopkg.in/yaml.v2
+
 echo go get github.com/stretchr/testify/assert
 go get github.com/stretchr/testify/assert
 

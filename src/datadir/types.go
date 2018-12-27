@@ -1,23 +1,20 @@
 package datadir
 
 type Bind struct {
-	Host string `json:"host,omniempty"`
-	Port int `json:"port,omniempty"`
+	Host string `yaml:"host,omitempty"`
+	Port int `yaml:"port,omitempty"`
+}
+
+
+type BoxRef struct {
+	Boxid string `yaml:"boxid"`
+	Endpoint string `yaml:"endpoint"`
+	Cert string `yaml:"cert,omitempty"`
+	ServiceNames []string `yaml:"service_names"`
 }
 
 type Config struct {
-	Version string `json:"version,omniempty"`
-	Bind Bind `json:"bind,omniempty"`
-}
-
-type BoxRef struct {
-	Boxid string `json:"boxid"`
-	Endpoint string `json:"endpoint"`
-	Cert string `json:"cert,omniempty"`
-	ServiceNames []string `json:"service_names"`
-}
-
-type StaticRouter struct {
-	Version string `json:"version,omniempty"`
-	Boxes []BoxRef `json:"boxes"`
+	Version string `yaml:"version,omitempty"`
+	Bind Bind `yaml:"bind,omitempty"`
+	StaticBoxes []BoxRef `yaml:"static_boxes,omitempty"`
 }

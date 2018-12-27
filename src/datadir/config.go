@@ -3,7 +3,8 @@ package datadir
 import (
 	"os"
 	"io/ioutil"
-	"encoding/json"
+
+	"gopkg.in/yaml.v2"
 )
 
 var cfg Config
@@ -21,7 +22,7 @@ func GetConfig() Config {
 }
 
 func (self *Config) ParseConfig() (err error) {
-	cfgPath := DataPath("config.json")
+	cfgPath := DataPath("config.yml")
 	if _, err := os.Stat(cfgPath); os.IsNotExist(err) {
 		self.FillDefaultValues()
 		return nil
@@ -30,7 +31,7 @@ func (self *Config) ParseConfig() (err error) {
 	if err != nil {
 		return err
 	}
-	err = json.Unmarshal(data, self)
+	err = yaml.Unmarshal(data, self)
 	if err != nil {
 		return err
 	}

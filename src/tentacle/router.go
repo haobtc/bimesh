@@ -1,4 +1,4 @@
-package mesh
+package tentacle
 
 import (
 	"sync"

@@ -1,4 +1,4 @@
-package mesh
+package tentacle
 
 var (
 	context *ContextT
@@ -21,3 +21,4 @@ func (self *ContextT) Start() {
 	go self.Router.Start()
 	go self.ServiceManager.Start()
 }
+
