@@ -20,8 +20,12 @@ type StaticEndpointConfig struct {
 	ServiceNames []string `yaml:"service_names"`
 }
 
+type StaticSection struct {
+	Endpoints []StaticEndpointConfig `yaml:"endpoints,flow"`
+}
+
 type Config struct {
 	Version string `yaml:"version,omitempty"`
 	Bind Bind `yaml:"bind,omitempty"`
-	StaticEndpoints []StaticEndpointConfig `yaml:"static_endpoints,flow"`
+	Static StaticSection `yaml:"static,omitempty"`
 }

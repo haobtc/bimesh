@@ -55,7 +55,7 @@ func (self *Config) ValidateValues() error {
 		self.Bind.Port = 18666
 	}
 
-	for _, endp := range self.StaticEndpoints {
+	for _, endp := range self.Static.Endpoints {
 		if endp.ServiceType == "" {
 			endp.ServiceType = "jsonrpc"
 		} else if endp.ServiceType != "jsonrpc" {

@@ -1,6 +1,7 @@
 package static
 
 import (
+	"time"
 	"bytes"
 	"net/http"
 	"mesh"
@@ -34,7 +35,7 @@ func (self StaticEndpoint) Request(msg jsonrpc.RPCMessage) (jsonrpc.RPCMessage, 
 	req, err := http.NewRequest("POST", self.Url, bytes.NewBuffer(data))
 	req.Header.Set("X-Framework", "bimesh")
 	// TODO: other headers
-	client := &http.Client{}
+	client := &http.Client{Timeout: 10 * time.Second}
 	resp, err := client.Do(req)
 	if err != nil {
 		return jsonrpc.RPCMessage{}, err
@@ -55,7 +56,7 @@ func (self StaticEndpoint) Request(msg jsonrpc.RPCMessage) (jsonrpc.RPCMessage, 
 func JoinMesh() {
 	mesh := mesh.GetMesh()
 	config := datadir.GetConfig()
-	for _, epConfig := range config.StaticEndpoints {
+	for _, epConfig := range config.Static.Endpoints {
 		endpoint := FromConfig(epConfig)
 		mesh.Join(endpoint)
 	}
