@@ -2,6 +2,7 @@ package main
 
 import (
 	"log"
+	"fmt"
 	"net/http"
 	"bytes"
 	"github.com/gorilla/websocket"
@@ -17,15 +18,26 @@ var upgrader = websocket.Upgrader{}
 //var serviceManager = new(mesh.ServiceManager)
 
 func main() {
-	datadir.SetDataDir("hello")
+	//datadir.SetDataDir("hello")
 	datadir.EnsureDataDir("")
+
+	cfg := datadir.GetConfig()
+	fmt.Printf("version %s %s %d\n", cfg.Version, cfg.Bind.Host, cfg.Bind.Port)
+
+	router := datadir.GetRouter()
+	for _, box := range router.Boxes {
+		fmt.Printf("box %s %s %s \n", box.Boxid, box.Endpoint, box.Cert)
+		for _, name := range box.ServiceNames {
+			fmt.Printf(" - service %s\n", name)
+		}
+	}
 	mesh.Context().Start()
 
 	http.HandleFunc("/jsonrpc/ws", handleWebsocket)
 	http.HandleFunc("/jsonrpc/http", handleHttp)
 
 	http.HandleFunc("/", home)
-	log.Fatal(http.ListenAndServe("localhost:8080", nil))
+	log.Fatal(http.ListenAndServe(fmt.Sprintf("%s:%d", cfg.Bind.Host, cfg.Bind.Port), nil))
 }
 
 func home(w http.ResponseWriter, r *http.Request) {
