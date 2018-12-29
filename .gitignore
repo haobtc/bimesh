@@ -14,7 +14,12 @@
 .glide/
 github.com/
 gopkg.in/
+go.etcd.io/
+golang.org/
+google.golang.org/
+
 bin
 pkg
 node_modules/
 bimeshdata/
+

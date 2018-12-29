@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"datadir"
 	"mesh"
+	"bbox"
 )
 
 func main() {

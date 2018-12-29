@@ -11,11 +11,20 @@ import (
 	"mesh"
 	"jsonrpc"
 	"static"
+	"bbox"
 )
 
 func StartServer() {
 	cfg := datadir.GetConfig()
 	static.JoinMesh()
+	go func() {
+		err := bbox.WatchBoxes()
+		if err != nil {
+			panic(err)
+		}
+	}()
+
+	
 	tentacle.Context().Start()
 
 	http.HandleFunc("/jsonrpc/ws", HandleWebsocket)

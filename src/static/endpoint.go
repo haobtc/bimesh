@@ -27,7 +27,7 @@ func (self StaticEndpoint) GetServiceNames() []string {
 	return self.serviceNames
 }
 
-func (self StaticEndpoint) Request(msg jsonrpc.RPCMessage) (jsonrpc.RPCMessage, error) {
+func (self *StaticEndpoint) Request(msg jsonrpc.RPCMessage) (jsonrpc.RPCMessage, error) {
 	data, err := msg.Raw.MarshalJSON()
 	if err != nil {
 		return jsonrpc.RPCMessage{}, err
@@ -58,6 +58,6 @@ func JoinMesh() {
 	config := datadir.GetConfig()
 	for _, epConfig := range config.Static.Endpoints {
 		endpoint := FromConfig(epConfig)
-		mesh.Join(endpoint)
+		mesh.Join(&endpoint)
 	}
 }

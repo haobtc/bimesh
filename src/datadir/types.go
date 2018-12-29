@@ -24,8 +24,14 @@ type StaticSection struct {
 	Endpoints []StaticEndpointConfig `yaml:"endpoints,flow"`
 }
 
+type BboxSection struct {
+	Prefix string `yaml:"prefix"`
+	Etcd []string `yaml:"etcd"`
+}
+
 type Config struct {
 	Version string `yaml:"version,omitempty"`
 	Bind Bind `yaml:"bind,omitempty"`
 	Static StaticSection `yaml:"static,omitempty"`
+	Bbox BboxSection `yaml:"bbox,omitempty"`
 }
