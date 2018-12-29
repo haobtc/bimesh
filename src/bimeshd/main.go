@@ -4,12 +4,12 @@ import (
 	"fmt"
 	"datadir"
 	"mesh"
-	"bbox"
 )
 
 func main() {
 	//datadir.SetDataDir("hello")
 	datadir.EnsureDataDir("")
+
 
 	m := mesh.GetMesh()
 	cfg := datadir.GetConfig()

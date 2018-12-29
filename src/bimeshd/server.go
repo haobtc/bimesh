@@ -17,14 +17,20 @@ import (
 func StartServer() {
 	cfg := datadir.GetConfig()
 	static.JoinMesh()
-	go func() {
-		err := bbox.WatchBoxes()
+
+	if bbox.IsAvailable() {
+		client := new(bbox.BboxClient)
+		err := client.Init()
 		if err != nil {
 			panic(err)
 		}
-	}()
-
-	
+		go func() {
+			err := client.WatchBoxes()
+			if err != nil {
+				panic(err)
+			}
+		}()
+	}
 	tentacle.Context().Start()
 
 	http.HandleFunc("/jsonrpc/ws", HandleWebsocket)
@@ -72,7 +78,7 @@ func HandleHttp(w http.ResponseWriter, r*http.Request) {
 		return
 	}
 
-	result, err := endpoint.Request(msg)
+	result, err := (*endpoint).Request(msg)
 	if err != nil {
 		jsonrpc.ErrorResponse(w, r, err, 500, "Server error")
 	}
