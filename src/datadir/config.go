@@ -3,7 +3,6 @@ package datadir
 import (
 	"os"
 	"io/ioutil"
-	"errors"
 
 	"gopkg.in/yaml.v2"
 )
@@ -55,18 +54,6 @@ func (self *Config) ValidateValues() error {
 		self.Bind.Port = 18666
 	}
 
-	for _, endp := range self.Static.Endpoints {
-		if endp.ServiceType == "" {
-			endp.ServiceType = "jsonrpc"
-		} else if endp.ServiceType != "jsonrpc" {
-			// currently we only support jsonrpc
-			return errors.New("endpoint service type is not jsonrpc")
-		}
-
-		if endp.ServiceInfix == "" {
-			endp.ServiceInfix = "::"
-		}
-	}
 	return nil
 }
 

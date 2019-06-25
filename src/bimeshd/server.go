@@ -10,39 +10,23 @@ import (
 	"datadir"
 	"mesh"
 	"jsonrpc"
-	"static"
-	"bbox"
 )
 
 func StartServer() {
 	cfg := datadir.GetConfig()
-	static.JoinMesh()
-
-	if bbox.IsAvailable() {
-		client := new(bbox.BboxClient)
-		err := client.Init()
-		if err != nil {
-			panic(err)
-		}
-		go func() {
-			err := client.WatchBoxes()
-			if err != nil {
-				panic(err)
-			}
-		}()
-	}
+	
 	tentacle.Context().Start()
 
 	http.HandleFunc("/jsonrpc/ws", HandleWebsocket)
 	http.HandleFunc("/jsonrpc/http", HandleHttp)
 
-	http.HandleFunc("/", home)
+	http.HandleFunc("/", HandleHome)
 	log.Fatal(
 		http.ListenAndServe(
 		fmt.Sprintf("%s:%d", cfg.Bind.Host, cfg.Bind.Port), nil))
 }
 
-func home(w http.ResponseWriter, r *http.Request) {
+func HandleHome(w http.ResponseWriter, r *http.Request) {
 	http.ServeFile(w, r, "index.html")
 }
 

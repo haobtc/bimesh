@@ -16,6 +16,7 @@ type EndpointSource int
 type Endpoint interface {
 	GetId() string
 	GetServiceNames() []string
+	IsLocal() bool
 	Request(msg jsonrpc.RPCMessage) (jsonrpc.RPCMessage, error)
 }
 
