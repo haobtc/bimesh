@@ -256,14 +256,14 @@ func (self *Router) deliverMessage(connId jsonrpc.CID, msg jsonrpc.RPCMessage) e
 func (self *Router) Start() {
 	for {
 		select {
-		case openCmd := <-self.ChJoin:
-			self.registerConn(openCmd.ConnId, openCmd.Channel, openCmd.Intent)
+		case cmdOpen := <-self.ChJoin:
+			self.registerConn(cmdOpen.ConnId, cmdOpen.Channel, cmdOpen.Intent)
 		case msg := <-self.ChMsg:
 			self.routeMessage(msg)
 		case notify := <-self.ChBroadcast:
 			self.broadcastNotify(notify)
-		case closeCmd := <-self.ChLeave:
-			self.unregisterConn(jsonrpc.CID(closeCmd))
+		case cmdClose := <-self.ChLeave:
+			self.unregisterConn(jsonrpc.CID(cmdClose))
 		}
 	}
 }
@@ -280,7 +280,8 @@ func (self *Router) BroadcastNotify(notify jsonrpc.RPCMessage, fromConnId jsonrp
 }
 
 func (self *Router) Join(connId jsonrpc.CID, ch MsgChannel, intent string) {
-	self.ChJoin <- JoinCommand{ConnId: connId, Channel: ch, Intent: intent}
+	self.ChJoin <- JoinCommand{
+		ConnId: connId, Channel: ch, Intent: intent}
 }
 
 func (self *Router) Leave(connId jsonrpc.CID) {

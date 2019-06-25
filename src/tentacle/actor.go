@@ -23,9 +23,11 @@ func (self *Actor) Start() {
 
 	for {
 		select {
-		case msg, more := <-self.ChMsg:
+		case msg, more := <- self.ChMsg:
 			if more {
-				self.writeJSON(msg.Raw)
+				if writeErr := self.writeJSON(msg.Raw); writeErr {
+					return
+				}
 			} else {
 				// log.
 				return

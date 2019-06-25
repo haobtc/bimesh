@@ -45,13 +45,9 @@ func (self *Config) ValidateValues() error {
 	if self.Version == "" {
 		self.Version = "1.0"
 	}
-	if self.Bind.Host == "" {
-		self.Bind.Host = "127.0.0.1"
-	}
 
-	if self.Bind.Port <= 0 || self.Bind.Port > 65535 {
-		// should be a legal port
-		self.Bind.Port = 18666
+	if self.Server.Bind == "" {
+		self.Server.Bind = "127.0.0.1:38600"
 	}
 
 	return nil

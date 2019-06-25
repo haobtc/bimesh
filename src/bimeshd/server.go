@@ -2,7 +2,6 @@ package main
 
 import (
 	"log"
-	"fmt"
 	"bytes"
 	"errors"
 	"net/http"
@@ -22,8 +21,7 @@ func StartServer() {
 
 	http.HandleFunc("/", HandleHome)
 	log.Fatal(
-		http.ListenAndServe(
-		fmt.Sprintf("%s:%d", cfg.Bind.Host, cfg.Bind.Port), nil))
+		http.ListenAndServe(cfg.Server.Bind, nil))
 }
 
 func HandleHome(w http.ResponseWriter, r *http.Request) {

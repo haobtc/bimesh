@@ -4,11 +4,9 @@ import (
 	"jsonrpc"
 )
 
-// builtin services manager
-
+// core services manager
 func (self *ServiceManager) Init() *ServiceManager {
 	self.ChMsg = make(MsgChannel, 100)
-	//self.ConnId = CID(uuid.Must(uuid.NewV4()).String())
 	self.ConnId = GetCID()
 	return self
 }
@@ -19,7 +17,7 @@ func (self *ServiceManager) Close() {
 
 func (self *ServiceManager) Start() {
 	Context().Router.Join(self.ConnId, self.ChMsg, "builtin")
-	Context().Router.RegisterService(self.ConnId, "builtin-services")
+	Context().Router.RegisterService(self.ConnId, "core.services")
 
 	for {
 		select {

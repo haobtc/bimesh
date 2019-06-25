@@ -1,11 +1,16 @@
 package datadir
 
-type Bind struct {
-	Host string `yaml:"host,omitempty"`
-	Port int `yaml:"port,omitempty"`
+type ServerConfig struct {
+	Bind string `yaml:"bind,omitempty"`
+	Endpoint string `yaml:"endpoint,omitempty"`
+}
+
+type DatastoreConfig struct {
+	DSN string `yaml:"dsn,omitempty"`
 }
 
 type Config struct {
 	Version string `yaml:"version,omitempty"`
-	Bind Bind `yaml:"bind,omitempty"`
+	Server ServerConfig `yaml:"server,omitempty"`
+	Datastore DatastoreConfig `yaml:"datastore,omitempty"`
 }

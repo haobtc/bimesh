@@ -9,11 +9,9 @@ import (
 func main() {
 	//datadir.SetDataDir("hello")
 	datadir.EnsureDataDir("")
-
-
 	m := mesh.GetMesh()
 	cfg := datadir.GetConfig()
-	fmt.Printf("version %s %s %d\n", cfg.Version, cfg.Bind.Host, cfg.Bind.Port)
+	fmt.Printf("version %s %s\n", cfg.Version, cfg.Server.Bind)
 
 	m.Print()
 
