@@ -10,7 +10,11 @@ import (
 
 
 // 5 seconds
-const DefaultRequestTimeout time.Duration = 1000000 * 5
+const (
+	DefaultRequestTimeout time.Duration = 1000000 * 5
+	
+	IntentLocal string = "local"
+)
 
 var (
 	ErrNotNotify = errors.New("json message is not notify")
@@ -18,14 +22,6 @@ var (
 
 // Commands
 type MsgChannel chan jsonrpc.RPCMessage
-
-type JoinCommand struct {
-	ConnId  jsonrpc.CID
-	Channel MsgChannel
-	Intent  string
-}
-
-type LeaveCommand jsonrpc.CID
 
 // Pending Struct
 type PendingKey struct {
@@ -39,10 +35,11 @@ type PendingValue struct {
 }
 
 // ConnT
-type ConnT struct {
-	RecvChannel MsgChannel
-	Intent      string
+type ConnT interface {
+	RecvChannel() MsgChannel
+	CanBroadcast() bool
 }
+
 
 type Router struct {
 	// channels
@@ -50,12 +47,12 @@ type Router struct {
 	ServiceConnMap map[string]([]jsonrpc.CID)
 	ConnServiceMap map[jsonrpc.CID]([]string)
 
-	ConnMap    map[jsonrpc.CID](*ConnT)
+	ConnMap    map[jsonrpc.CID](ConnT)
 	PendingMap map[PendingKey]PendingValue
 }
 
 // An ConnActor manage a websocket connection and handles incoming messages
-type Actor struct {
+type LocalConnT struct {
 	ChMsg  MsgChannel
 	ConnId jsonrpc.CID
 	Conn   *websocket.Conn

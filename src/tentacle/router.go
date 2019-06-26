@@ -28,12 +28,12 @@ func (self *Router) Init() *Router {
 	self.serviceLock = new(sync.RWMutex)
 	self.ServiceConnMap = make(map[string]([]jsonrpc.CID))
 	self.ConnServiceMap = make(map[jsonrpc.CID]([]string))
-	self.ConnMap = make(map[jsonrpc.CID](*ConnT))
+	self.ConnMap = make(map[jsonrpc.CID](ConnT))
 	self.PendingMap = make(map[PendingKey]PendingValue)
 	return self
 }
 
-func (self *Router) registerConn(connId jsonrpc.CID, conn *ConnT) {
+func (self *Router) registerConn(connId jsonrpc.CID, conn ConnT) {
 	self.ConnMap[connId] = conn
 	// register connId as a service name
 }
@@ -104,7 +104,7 @@ func (self *Router) UnRegisterService(connId jsonrpc.CID, serviceName string) er
 	ct, ok := self.ConnMap[connId]
 	if ok {
 		delete(self.ConnMap, connId)
-		close(ct.RecvChannel)
+		close(ct.RecvChannel())
 	}
 	return nil
 }
@@ -134,7 +134,7 @@ func (self *Router) unregisterConn(connId jsonrpc.CID) {
 	ct, ok := self.ConnMap[connId]
 	if ok {
 		delete(self.ConnMap, connId)
-		close(ct.RecvChannel)
+		close(ct.RecvChannel())
 	}
 }
 
@@ -231,21 +231,21 @@ func (self *Router) broadcastNotify(notify jsonrpc.RPCMessage) (int, error) {
 		return nil */
 		return 0, ErrNotNotify
 	}
-	deliveredCnt := 0
-	for connId, connT := range self.ConnMap {
-		if connT.Intent == "actor" {
+	cntDeliver := 0
+	for connId, conn := range self.ConnMap {
+		if conn.CanBroadcast() { // == IntentLocal {
 			self.deliverMessage(connId, notify)
-			deliveredCnt += 1
+			cntDeliver += 1
 		}
 	}
-	return deliveredCnt, nil
+	return cntDeliver, nil
 }
 
 func (self *Router) deliverMessage(connId jsonrpc.CID, msg jsonrpc.RPCMessage) *ConnT {
 	ct, ok := self.ConnMap[connId]
 	if ok {
-		ct.RecvChannel <- msg
-		return ct
+		ct.RecvChannel() <- msg
+		return &ct
 	}
 	return nil
 }
@@ -284,13 +284,13 @@ func (self *Router) BroadcastNotify(notify jsonrpc.RPCMessage, fromConnId jsonrp
 	return self.broadcastNotify(notify)
 }
 
-func (self *Router) Join(connId jsonrpc.CID, ch MsgChannel, intent string) {
+/*func (self *Router) Join(connId jsonrpc.CID, ch MsgChannel, intent string) {
 	conn := &ConnT{RecvChannel: ch, Intent: intent}
 	//self.registerConn(cmdOpen.ConnId, conn)
 	self.JoinConn(connId, conn)
-}
+}*/
 
-func (self *Router) JoinConn(connId jsonrpc.CID, conn *ConnT) {
+func (self *Router) JoinConn(connId jsonrpc.CID, conn ConnT) {
 	self.serviceLock.Lock()
 	defer self.serviceLock.Unlock()
 	self.registerConn(connId, conn)

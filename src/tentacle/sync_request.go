@@ -15,9 +15,16 @@ func (self *Requester) Close() {
 	Tentacle().Router.Leave(self.ConnId)
 }
 
+func (self Requester) RecvChannel() MsgChannel {
+	return self.ChMsg
+}
+func (self Requester) CanBroadcast() bool {
+	return false
+}
+
 func (self *Requester) RequestAndWait(msg jsonrpc.RPCMessage) (jsonrpc.RPCMessage, error) {
 	// register connection
-	Tentacle().Router.Join(self.ConnId, self.ChMsg, "requester")
+	Tentacle().Router.JoinConn(self.ConnId, self)
 	Tentacle().Router.RouteMessage(msg, self.ConnId)
 
 	for {

@@ -19,8 +19,17 @@ func (self *ServiceManager) Start() {
 	go self.Run()
 }
 
+func (self *ServiceManager) RecvChannel() MsgChannel {
+	return self.ChMsg
+}
+
+func (self *ServiceManager) CanBroadcast() bool {
+	return false
+}
+
 func (self *ServiceManager) Run() {
-	Tentacle().Router.Join(self.ConnId, self.ChMsg, "builtin")
+	//Tentacle().Router.Join(self.ConnId, self.ChMsg, "builtin")
+	Tentacle().Router.JoinConn(self.ConnId, self)
 	Tentacle().Router.RegisterService(self.ConnId, "core.services")
 
 	for {

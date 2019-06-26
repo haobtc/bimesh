@@ -13,7 +13,7 @@ func HandleWebsocket(w http.ResponseWriter, r *http.Request) {
 	conn, _ := upgrader.Upgrade(w, r, nil)
 	defer conn.Close()
 
-	actor := new(Actor).Init(conn)
+	actor := new(LocalConnT).Init(conn)
 	defer actor.Close()
 
 	go actor.Start()

@@ -5,7 +5,7 @@ import (
 	"github.com/gorilla/websocket"
 )
 
-func (self *Actor) Init(conn *websocket.Conn) *Actor {
+func (self *LocalConnT) Init(conn *websocket.Conn) *LocalConnT {
 	self.Conn = conn
 	self.ChMsg = make(MsgChannel, 100)
 	//self.ConnId = CID(uuid.Must(uuid.NewV4()).String())
@@ -13,13 +13,21 @@ func (self *Actor) Init(conn *websocket.Conn) *Actor {
 	return self
 }
 
-func (self *Actor) Close() {
+func (self LocalConnT) RecvChannel() MsgChannel {
+	return self.ChMsg
+}
+
+func (self LocalConnT) CanBroadcast() bool {
+	return true
+}
+
+func (self *LocalConnT) Close() {
 	Tentacle().Router.Leave(self.ConnId)
 }
 
-func (self *Actor) Start() {
+func (self *LocalConnT) Start() {
 	// register connection
-	Tentacle().Router.Join(self.ConnId, self.ChMsg, "actor")
+	Tentacle().Router.JoinConn(self.ConnId, self)
 
 	for {
 		select {
@@ -36,7 +44,7 @@ func (self *Actor) Start() {
 	}
 }
 
-func (self *Actor) writeJSON(data *simplejson.Json) error {
+func (self *LocalConnT) writeJSON(data *simplejson.Json) error {
 	// send to self
 	bytes, err := data.MarshalJSON()
 	if err != nil {
