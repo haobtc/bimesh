@@ -14,7 +14,7 @@ import (
 func StartServer() {
 	cfg := datadir.GetConfig()
 	
-	tentacle.Context().Start()
+	tentacle.Tentacle().Start()
 
 	http.HandleFunc("/jsonrpc/ws", HandleWebsocket)
 	http.HandleFunc("/jsonrpc/http", HandleHttp)

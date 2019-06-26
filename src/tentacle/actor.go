@@ -14,18 +14,18 @@ func (self *Actor) Init(conn *websocket.Conn) *Actor {
 }
 
 func (self *Actor) Close() {
-	Context().Router.Leave(self.ConnId)
+	Tentacle().Router.Leave(self.ConnId)
 }
 
 func (self *Actor) Start() {
 	// register connection
-	Context().Router.Join(self.ConnId, self.ChMsg, "actor")
+	Tentacle().Router.Join(self.ConnId, self.ChMsg, "actor")
 
 	for {
 		select {
 		case msg, more := <- self.ChMsg:
 			if more {
-				if writeErr := self.writeJSON(msg.Raw); writeErr {
+				if writeErr := self.writeJSON(msg.Raw); writeErr != nil {
 					return
 				}
 			} else {

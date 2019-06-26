@@ -12,13 +12,13 @@ func (self *Requester) Init() *Requester {
 }
 
 func (self *Requester) Close() {
-	Context().Router.Leave(self.ConnId)
+	Tentacle().Router.Leave(self.ConnId)
 }
 
 func (self *Requester) RequestAndWait(msg jsonrpc.RPCMessage) (jsonrpc.RPCMessage, error) {
 	// register connection
-	Context().Router.Join(self.ConnId, self.ChMsg, "requester")
-	Context().Router.RouteMessage(msg, self.ConnId)
+	Tentacle().Router.Join(self.ConnId, self.ChMsg, "requester")
+	Tentacle().Router.RouteMessage(msg, self.ConnId)
 
 	for {
 		select {

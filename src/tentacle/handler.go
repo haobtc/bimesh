@@ -9,7 +9,7 @@ import (
 var upgrader = websocket.Upgrader{}
 
 func HandleWebsocket(w http.ResponseWriter, r *http.Request) {
-	context := Context()
+	tentacle := Tentacle()
 	conn, _ := upgrader.Upgrade(w, r, nil)
 	defer conn.Close()
 
@@ -33,7 +33,7 @@ func HandleWebsocket(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 		msg.FromConnId = actor.ConnId
-		context.Router.RouteMessage(msg, actor.ConnId)
+		tentacle.Router.RouteMessage(msg, actor.ConnId)
 	}
 }
 

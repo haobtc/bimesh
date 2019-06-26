@@ -2,6 +2,7 @@ package tentacle
 
 import (
 	"github.com/gorilla/websocket"
+	"errors"
 	"sync"
 	"time"
 	"jsonrpc"
@@ -10,6 +11,10 @@ import (
 
 // 5 seconds
 const DefaultRequestTimeout time.Duration = 1000000 * 5
+
+var (
+	ErrNotNotify = errors.New("json message is not notify")
+)
 
 // Commands
 type MsgChannel chan jsonrpc.RPCMessage
@@ -41,16 +46,11 @@ type ConnT struct {
 
 type Router struct {
 	// channels
-	ChJoin      chan JoinCommand
-	ChLeave     chan LeaveCommand
-	ChMsg       MsgChannel
-	ChBroadcast MsgChannel
-
 	serviceLock    *sync.RWMutex
 	ServiceConnMap map[string]([]jsonrpc.CID)
 	ConnServiceMap map[jsonrpc.CID]([]string)
 
-	ConnMap    map[jsonrpc.CID](ConnT)
+	ConnMap    map[jsonrpc.CID](*ConnT)
 	PendingMap map[PendingKey]PendingValue
 }
 
@@ -72,7 +72,7 @@ type ServiceManager struct {
 	ConnId jsonrpc.CID
 }
 
-type ContextT struct {
+type TentacleT struct {
 	Router         *Router
 	ServiceManager *ServiceManager
 }

@@ -12,12 +12,16 @@ func (self *ServiceManager) Init() *ServiceManager {
 }
 
 func (self *ServiceManager) Close() {
-	Context().Router.Leave(self.ConnId)
+	Tentacle().Router.Leave(self.ConnId)
 }
 
 func (self *ServiceManager) Start() {
-	Context().Router.Join(self.ConnId, self.ChMsg, "builtin")
-	Context().Router.RegisterService(self.ConnId, "core.services")
+	go self.Run()
+}
+
+func (self *ServiceManager) Run() {
+	Tentacle().Router.Join(self.ConnId, self.ChMsg, "builtin")
+	Tentacle().Router.RegisterService(self.ConnId, "core.services")
 
 	for {
 		select {
@@ -33,11 +37,11 @@ func (self *ServiceManager) Start() {
 }
 
 func (self *ServiceManager) registerServices(msg jsonrpc.RPCMessage) {
-	context = Context()
+	tentacle = Tentacle()
 	params, err := msg.Params.Array()
 	if err != nil {
 		errMsg := jsonrpc.NewErrorMessage(msg.Id, 400, "params must be array")
-		context.Router.RouteMessage(errMsg, self.ConnId)
+		tentacle.Router.RouteMessage(errMsg, self.ConnId)
 		return
 	}
 	var serviceNames []string
@@ -46,25 +50,25 @@ func (self *ServiceManager) registerServices(msg jsonrpc.RPCMessage) {
 		serviceName, ok := v.(string)
 		if !ok {
 			errMsg := jsonrpc.NewErrorMessage(msg.Id, 400, "service name must be string")
-			context.Router.RouteMessage(errMsg, self.ConnId)
+			tentacle.Router.RouteMessage(errMsg, self.ConnId)
 			return
 		}
 		serviceNames = append(serviceNames, serviceName)
 	}
 
 	for _, serviceName := range serviceNames {
-		context.Router.RegisterService(msg.FromConnId, serviceName)
+		tentacle.Router.RegisterService(msg.FromConnId, serviceName)
 	}
 	result := jsonrpc.NewResultMessage(msg.Id, "ok")
-	context.Router.RouteMessage(result, self.ConnId)
+	tentacle.Router.RouteMessage(result, self.ConnId)
 }
 
 func (self *ServiceManager) unregisterServices(msg jsonrpc.RPCMessage) {
-	context = Context()
+	tentacle = Tentacle()
 	params, err := msg.Params.Array()
 	if err != nil {
 		errMsg := jsonrpc.NewErrorMessage(msg.Id, 400, "params must be array")
-		context.Router.RouteMessage(errMsg, self.ConnId)
+		tentacle.Router.RouteMessage(errMsg, self.ConnId)
 		return
 	}
 	var serviceNames []string
@@ -73,17 +77,17 @@ func (self *ServiceManager) unregisterServices(msg jsonrpc.RPCMessage) {
 		serviceName, ok := v.(string)
 		if !ok {
 			errMsg := jsonrpc.NewErrorMessage(msg.Id, 400, "service name must be string")
-			context.Router.RouteMessage(errMsg, self.ConnId)
+			tentacle.Router.RouteMessage(errMsg, self.ConnId)
 			return
 		}
 		serviceNames = append(serviceNames, serviceName)
 	}
 
 	for _, serviceName := range serviceNames {
-		context.Router.UnRegisterService(msg.FromConnId, serviceName)
+		tentacle.Router.UnRegisterService(msg.FromConnId, serviceName)
 	}
 	result := jsonrpc.NewResultMessage(msg.Id, "ok")
-	context.Router.RouteMessage(result, self.ConnId)
+	tentacle.Router.RouteMessage(result, self.ConnId)
 }
 
 func (self *ServiceManager) handleMessage(msg jsonrpc.RPCMessage) {
@@ -93,17 +97,17 @@ func (self *ServiceManager) handleMessage(msg jsonrpc.RPCMessage) {
 	case "unregister":
 		self.unregisterServices(msg)
 	case "getServices":
-		serviceNames := Context().Router.GetServices(self.ConnId)
+		serviceNames := Tentacle().Router.GetServices(self.ConnId)
 		result := jsonrpc.NewResultMessage(msg.Id, serviceNames)
-		Context().Router.RouteMessage(result, self.ConnId)
+		Tentacle().Router.RouteMessage(result, self.ConnId)
 	case "getId":
 		result := jsonrpc.NewResultMessage(msg.Id, msg.FromConnId)
-		Context().Router.RouteMessage(result, self.ConnId)
+		Tentacle().Router.RouteMessage(result, self.ConnId)
 	case "ping":
 		result := jsonrpc.NewResultMessage(msg.Id, "pong")
-		Context().Router.RouteMessage(result, self.ConnId)
+		Tentacle().Router.RouteMessage(result, self.ConnId)
 	default:
 		errorMsg := jsonrpc.NewErrorMessage(msg.Id, 404, "method not found")
-		Context().Router.RouteMessage(errorMsg, self.ConnId)
+		Tentacle().Router.RouteMessage(errorMsg, self.ConnId)
 	}
 }
